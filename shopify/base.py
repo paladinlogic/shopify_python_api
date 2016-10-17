@@ -1,9 +1,11 @@
 import pyactiveresource.connection
 from pyactiveresource.activeresource import ActiveResource, ResourceMeta, formats
 import shopify.yamlobjects
+import shopify.limits as limits
 import shopify.mixins as mixins
 import shopify
 import threading
+from time import sleep
 import sys
 from six.moves import urllib
 import six
@@ -24,6 +26,8 @@ class ShopifyConnection(pyactiveresource.connection.Connection):
         except pyactiveresource.connection.ConnectionError as err:
             self.response = err.response
             raise
+        if limits.maxed():
+            sleep(.5)
         return self.response
 
 # Inherit from pyactiveresource's metaclass in order to use ShopifyConnection
