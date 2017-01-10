@@ -27,7 +27,7 @@ class ShopifyConnection(pyactiveresource.connection.Connection):
             self.response = err.response
             raise
         if limits.maxed():
-            sleep(.5)
+            sleep(.6)
         return self.response
 
 # Inherit from pyactiveresource's metaclass in order to use ShopifyConnection
