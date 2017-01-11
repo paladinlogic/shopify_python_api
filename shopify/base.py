@@ -10,14 +10,19 @@ import sys
 from six.moves import urllib
 import six
 
+import logging
+
+logger = logging.getLogger('root').getChild('shopify.base')
 
 # Store the response from the last request in the connection object
 class ShopifyConnection(pyactiveresource.connection.Connection):
     response = None
+    logger = logger.getChild('ShopifyConnection[Static]')
 
     def __init__(self, site, user=None, password=None, timeout=None,
                  format=formats.JSONFormat):
         super(ShopifyConnection, self).__init__(site, user, password, timeout, format)
+        self.logger = logger.getChild('ShopifyConnection')
 
     def _open(self, *args, **kwargs):
         self.response = None
@@ -27,11 +32,13 @@ class ShopifyConnection(pyactiveresource.connection.Connection):
             self.response = err.response
             raise
         if limits.maxed():
+            logger.debug('Sleeping...')
             sleep(.6)
         return self.response
 
 # Inherit from pyactiveresource's metaclass in order to use ShopifyConnection
 class ShopifyResourceMeta(ResourceMeta):
+    logger = logger.getChild('ShopifyResourceMeta[Static]')
 
     @property
     def connection(cls):
@@ -124,8 +131,11 @@ class ShopifyResource(ActiveResource, mixins.Countable):
     _format = formats.JSONFormat
     _threadlocal = threading.local()
     _headers = {'User-Agent': 'ShopifyPythonAPI/%s Python/%s' % (shopify.VERSION, sys.version.split(' ', 1)[0])}
+    logger = logger.getChild('ShopifyResource[Static]')
 
     def __init__(self, attributes=None, prefix_options=None):
+        self.logger = logger.getChild('ShopifyResource')
+
         if attributes is not None and prefix_options is None:
             prefix_options, attributes = self.__class__._split_options(attributes)
         return super(ShopifyResource, self).__init__(attributes, prefix_options)
