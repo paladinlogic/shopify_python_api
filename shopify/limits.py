@@ -17,12 +17,12 @@ logger = logging.getLogger('root').getChild('shopify.limits')
 
 CREDIT_LIMIT_HEADER_PARAM = 'x-shopify-shop-api-call-limit'
 
-def debug(f):
-    fname = f.func_name
+def debug(fn):
+    fname = fn.func_name
 
-    @wraps(f)
+    @wraps(fn)
     def wrapped(*args, **kwargs):
-        r = f(*args, **kwargs)
+        r = fn(*args, **kwargs)
 
         logger.debug("%s() output '%s'", fname, r)
         return r
@@ -32,7 +32,10 @@ def debug(f):
 # Functions
 @debug
 def api_credit_limit_param():
-    return shopify.ShopifyResource.connection.response.headers[CREDIT_LIMIT_HEADER_PARAM].split('/')
+    limit = [0, 40]
+    if shopify.ShopifyResource.connection.response:
+        limit = shopify.ShopifyResource.connection.response.headers[CREDIT_LIMIT_HEADER_PARAM].split('/')
+    return limit
 
 @debug
 def credit_left():

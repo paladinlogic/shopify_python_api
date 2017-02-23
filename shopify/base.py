@@ -25,15 +25,16 @@ class ShopifyConnection(pyactiveresource.connection.Connection):
         self.logger = logger.getChild('ShopifyConnection')
 
     def _open(self, *args, **kwargs):
+        if limits.maxed():
+            logger.debug('Sleeping...')
+            sleep(.6)
+
         self.response = None
         try:
             self.response = super(ShopifyConnection, self)._open(*args, **kwargs)
         except pyactiveresource.connection.ConnectionError as err:
             self.response = err.response
             raise
-        if limits.maxed():
-            logger.debug('Sleeping...')
-            sleep(.6)
         return self.response
 
 # Inherit from pyactiveresource's metaclass in order to use ShopifyConnection
